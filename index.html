@@ -82,11 +82,16 @@
     border: 1px solid var(--border); border-radius: 14px; padding: 26px; text-align: center;
   }
   .dl p { color: var(--dim); font-size: 15px; }
-  .dl .plats { margin-top: 14px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  .plat {
-    padding: 9px 20px; border-radius: 10px; background: rgba(255,255,255,.06);
-    border: 1px solid var(--border); font-size: 14px; color: var(--text);
+  .dl .plats { margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  a.plat {
+    padding: 11px 22px; border-radius: 10px; background: rgba(255,148,50,.12);
+    border: 1px solid rgba(255,148,50,.45); font-size: 14px; color: var(--text);
+    text-decoration: none; font-weight: 600; transition: background .15s;
   }
+  a.plat:hover { background: rgba(255,148,50,.24); }
+  a.plat small { display: block; font-weight: 400; color: var(--dim); font-size: 11px; }
+  .dl .allver { margin-top: 14px; font-size: 13px; }
+  .dl .allver a { color: var(--cyan); }
 
   .story {
     background: var(--card); border: 1px solid var(--border); border-radius: 14px;
@@ -144,13 +149,14 @@
 <section class="wrap">
   <h2>Get it</h2>
   <div class="dl">
-    <p>GONDAIN is in private testing with friends. Builds are self-contained — unzip and run, nothing to install.</p>
+    <p>Current version: <b style="color:var(--text)">v1.0.2</b> · Builds are self-contained — unzip and run, nothing to install.</p>
     <div class="plats">
-      <div class="plat">🪟 Windows x64</div>
-      <div class="plat">🐧 Linux x64</div>
-      <div class="plat">🍎 macOS (Apple silicon)</div>
+      <a class="plat" href="https://github.com/jeff-m-m/gondain-site/releases/download/v1.0.2/Gondain-1.0.2-win-x64.zip">🪟 Windows x64<small>Gondain-1.0.2-win-x64.zip · 42 MB</small></a>
+      <a class="plat" href="https://github.com/jeff-m-m/gondain-site/releases/download/v1.0.2/Gondain-1.0.2-linux-x64.zip">🐧 Linux x64<small>Gondain-1.0.2-linux-x64.zip · 40 MB</small></a>
+      <a class="plat" href="https://github.com/jeff-m-m/gondain-site/releases/download/v1.0.2/Gondain-1.0.2-osx-arm64.zip">🍎 macOS Apple silicon<small>Gondain-1.0.2-osx-arm64.zip · 46 MB</small></a>
     </div>
-    <p style="margin-top:14px">Ask Gondain for the current build.</p>
+    <p class="allver"><a href="https://github.com/jeff-m-m/gondain-site/releases">All versions &amp; release notes →</a></p>
+    <p style="margin-top:12px; font-size:13px">Windows: run <span class="mono">Gondain.exe</span> · Linux: <span class="mono">chmod +x Gondain</span> · Mac: right-click → Open the first time (unsigned build)</p>
   </div>
 </section>
 
