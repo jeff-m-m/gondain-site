@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GONDAIN — Observational Notes on Damage, Auras, Inventory &amp; Nameds</title>
+<meta name="description" content="GONDAIN is a real-time combat dashboard for EverQuest Legends. It reads your log file — never the game — and turns it into DPS parses, buff timers, quest tracking, loot databases, and raid lockout calendars.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<style>
+  :root {
+    --bg: #121216;
+    --card: #1C1C23;
+    --card2: #17171D;
+    --border: rgba(255,255,255,.15);
+    --text: #E8E8EC;
+    --dim: #9A9AA5;
+    --accent: #FF9432;
+    --good: #59D973;
+    --cyan: #5BC8DD;
+    --gold: #E8C24A;
+    --purple: #C792EA;
+    --red: #F25959;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+
+  header { padding: 72px 0 48px; text-align: center; }
+  header img { width: 168px; height: 168px; border-radius: 22%; box-shadow: 0 12px 60px rgba(255,148,50,.18); }
+  h1 { margin-top: 28px; font-size: 44px; font-weight: 900; letter-spacing: 3px; color: var(--accent); }
+  h1 span { color: var(--text); font-weight: 400; letter-spacing: 0; font-size: 22px; display: block; margin-top: 6px; }
+  .pledge {
+    display: inline-block; margin-top: 22px; padding: 8px 18px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+    color: var(--dim); font-size: 14px;
+  }
+  .pledge b { color: var(--good); font-weight: 600; }
+
+  section { padding: 44px 0; }
+  h2 {
+    font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--dim); margin-bottom: 22px;
+  }
+  h2::before { content: "◆ "; color: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 6px; }
+  .card h3 .letter { color: var(--accent); font-weight: 900; }
+  .card p { font-size: 14px; color: var(--dim); }
+
+  .tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+  .tab {
+    background: var(--card2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 13px 16px; font-size: 14px;
+  }
+  .tab b { color: var(--accent); font-size: 12px; letter-spacing: 1.5px; }
+  .tab span { color: var(--dim); display: block; margin-top: 2px; }
+
+  ol.how { list-style: none; counter-reset: step; display: grid; gap: 12px; }
+  ol.how li {
+    counter-increment: step; background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px 16px 62px; position: relative; font-size: 15px; color: var(--dim);
+  }
+  ol.how li::before {
+    content: counter(step); position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 30px; border-radius: 50%; background: rgba(255,148,50,.15);
+    color: var(--accent); font-weight: 800; display: flex; align-items: center; justify-content: center;
+  }
+  ol.how li b { color: var(--text); }
+
+  .dl {
+    background: linear-gradient(180deg, var(--card), var(--card2));
+    border: 1px solid var(--border); border-radius: 14px; padding: 26px; text-align: center;
+  }
+  .dl p { color: var(--dim); font-size: 15px; }
+  .dl .plats { margin-top: 14px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .plat {
+    padding: 9px 20px; border-radius: 10px; background: rgba(255,255,255,.06);
+    border: 1px solid var(--border); font-size: 14px; color: var(--text);
+  }
+
+  .story {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 26px; display: flex; gap: 26px; align-items: center; flex-wrap: wrap;
+  }
+  .story img { width: 120px; height: 120px; border-radius: 22%; flex-shrink: 0; }
+  .story p { color: var(--dim); font-size: 15px; flex: 1; min-width: 260px; }
+  .story b { color: var(--text); }
+  .story .orange { color: var(--accent); }
+
+  footer { padding: 40px 0 56px; text-align: center; color: var(--dim); font-size: 13px; border-top: 1px solid rgba(255,255,255,.07); margin-top: 30px; }
+  footer p + p { margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <img src="assets/gondain-1024.png" alt="GONDAIN — one-eyed stone dwarf emblem">
+  <h1>GONDAIN<span>Gondain's <b>O</b>bservational <b>N</b>otes on <b>D</b>amage, <b>A</b>uras, <b>I</b>nventory &amp; <b>N</b>ameds</span></h1>
+  <div class="pledge"><b>Read-only.</b> GONDAIN never touches the game — it reads the log file EverQuest already writes.</div>
+</header>
+
+<section class="wrap">
+  <h2>What the one eye watches</h2>
+  <div class="grid">
+    <div class="card"><h3><span class="letter">D</span>amage</h3><p>Live DPS windows, a real-time sparkline, per-fight ability breakdowns with charts, group parses, and death recaps.</p></div>
+    <div class="card"><h3><span class="letter">A</span>uras</h3><p>Buff tracking that learns spell durations by watching your casts — expiry warnings, watched-buff alarms, spoken alerts.</p></div>
+    <div class="card"><h3><span class="letter">I</span>nventory</h3><p>A personal drop database: every item you loot, which mob dropped it, in which zone, at what rate. Plus a session loot ledger.</p></div>
+    <div class="card"><h3><span class="letter">N</span>ameds</h3><p>Rare-creature detection from con messages, kill logs with observed drop percentages, and respawn-window countdowns.</p></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Seven tabs</h2>
+  <div class="tabs">
+    <div class="tab"><b>COMBAT</b><span>The live dashboard: DPS, fights, buffs, abilities, stance, session economy.</span></div>
+    <div class="tab"><b>SKY QUESTS</b><span>Plane of Sky class quests with automatic loot counting, item stats, and class-unlock tracking.</span></div>
+    <div class="tab"><b>LOOT</b><span>Everything looted and sold this session, newest first, with coin rates.</span></div>
+    <div class="tab"><b>NAMEDS</b><span>Every named you've killed, its drops with observed rates, and respawn timers that speak up.</span></div>
+    <div class="tab"><b>ITEMS</b><span>Search your drop history by item, zone, or mob — including per-zone loot tables.</span></div>
+    <div class="tab"><b>RAIDS</b><span>A weekly lockout calendar: big-bag and small-bag loot chances per boss per difficulty.</span></div>
+    <div class="tab"><b>HISTORY</b><span>Parses over time, damage per day, filters for range, raid bosses, victories, and outliers.</span></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>How it works</h2>
+  <ol class="how">
+    <li><b>Turn on logging in game</b> with <span class="mono">/log on</span> — EverQuest writes everything that happens to a text file.</li>
+    <li><b>Point GONDAIN at the log.</b> It replays your history to learn your buffs, quests, nameds, and drops, then follows along live.</li>
+    <li><b>Play.</b> Every kill, loot, buff, and raid lockout is tracked automatically and kept in your own local data files — trimming the log never loses your catalog.</li>
+  </ol>
+</section>
+
+<section class="wrap">
+  <h2>Get it</h2>
+  <div class="dl">
+    <p>GONDAIN is in private testing with friends. Builds are self-contained — unzip and run, nothing to install.</p>
+    <div class="plats">
+      <div class="plat">🪟 Windows x64</div>
+      <div class="plat">🐧 Linux x64</div>
+      <div class="plat">🍎 macOS (Apple silicon)</div>
+    </div>
+    <p style="margin-top:14px">Ask Gondain for the current build.</p>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>The name</h2>
+  <div class="story">
+    <img src="assets/gondain-256.png" alt="Gondain emblem">
+    <p><b class="orange">Gondain</b> was a gray-haired, one-eyed Dwarf — an original EverQuest character rolled in <b>1999</b>. The name comes from Tolkien's Silmarillion: <i>gond</i>, stone. A quarter century later the old dwarf keeps watch again, one good eye on the log file, missing nothing.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>GONDAIN is a fan-made, read-only log companion for EverQuest Legends.</p>
+    <p>Not affiliated with or endorsed by Darkpaw Games or Daybreak Game Company. EverQuest is a trademark of its respective owners.</p>
+  </div>
+</footer>
+
+</body>
+</html>
